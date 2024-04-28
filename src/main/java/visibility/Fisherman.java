@@ -1,8 +1,12 @@
 package visibility;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Fisherman {
 
-    volatile boolean takeBait = false;
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    volatile boolean takeBait = false; // 만약 volatile 키워드가 없다면?
 
     public void fishing() {
         var fishing = new Thread(() -> {
@@ -10,17 +14,18 @@ public class Fisherman {
             while (!takeBait) {
                 count++;
             }
-            System.out.println("낚시 성공! " + count);
+            log.info("낚시 성공! {}", count);
         });
 
         var feeding = new Thread(() -> {
             try {
                 Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
             }
             takeBait = true;
-            System.out.println("물고기가 미끼를 물었습니다!");
+            log.info("물고기가 미끼를 물었습니다!");
         });
 
         fishing.start();
